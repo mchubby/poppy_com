@@ -11,4 +11,4 @@
 *.gc*
 .tags*
 *.info
-/Docs
+extras/Docs
