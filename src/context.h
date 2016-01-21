@@ -2,7 +2,7 @@
 #define CONTEXT_H_
 
 #include "src/config.h"
-#include "src/poppyNetwork.h"
+#include "src/poppy_com.h"
 
 #define TRUE 1
 #define FALSE 0
@@ -47,6 +47,6 @@ typedef struct {
         msg_t msg;          /*!< Message. */
     }context_t;
 
-context_t ctx;
+extern context_t ctx;
 
 #endif /* CONTEXT_H_ */

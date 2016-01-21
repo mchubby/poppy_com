@@ -15,7 +15,7 @@
  * This is the minimal include you will need to use poppy_com in a module
  * application
  */
-#include "src/poppyNetwork.h"
+#include "src/poppy_com.h"
 
 /**
  * \enum msg_dir_t
@@ -84,7 +84,7 @@ void tx_cb(msg_t *msg) {
  * \return integer
  */
 int main(void) {
-    poppyNetwork_init(tx_cb, rx_cb, rxgc_cb);
+    poppy_com_init(tx_cb, rx_cb, rxgc_cb);
 
     /*
      * Add your main code here.

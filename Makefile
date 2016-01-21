@@ -45,16 +45,16 @@ OPT = s
 FORMAT = ihex
 
 # List C source files here. (C dependencies are automatically generated.)
-SRC = $(TARGET).c
+SRC = $(TARGET).cpp
 
 # If there is more than one source file, append them above, or modify and
 # uncomment the following:
 # poppy_com source files
 SRC += \
-src/i2c_master.c \
-src/i2c_slave.c \
-src/poppyNetwork.c \
-extras/hal/$(MCU)/hal.c
+src/i2c_master.cpp \
+src/i2c_slave.cpp \
+src/poppy_com.cpp \
+extras/hal/$(MCU)/hal.cpp
 # Application source files
 SRC +=
 
@@ -89,7 +89,7 @@ EXTRAINCDIRS = src/ extras/hal/$(MCU)/
 CFLAGS = -g -O$(OPT) \
 -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums \
 -Wall -Wstrict-prototypes \
--Wa,-adhlns=$(<:.c=.lst) \
+-Wa,-adhlns=$(<:.cpp=.lst) \
 -DMCU=$(MCU) \
 -DMAINCLOCK=$(MAINCLOCK) \
 -DSCLFREQ=$(SCLFREQ) \
@@ -225,10 +225,10 @@ MSG_CLEANING = "\033[33;36mCleaning project:\033[33;0m"
 
 
 # Define all object files.
-OBJ = $(SRC:.c=.o) $(ASRC:.S=.o)
+OBJ = $(SRC:.cpp=.o) $(ASRC:.S=.o)
 
 # Define all listing files.
-LST = $(ASRC:.S=.lst) $(SRC:.c=.lst)
+LST = $(ASRC:.S=.lst) $(SRC:.cpp=.lst)
 
 # Combine all necessary flags and optional flags.
 # Add target processor to flags.
@@ -343,14 +343,14 @@ program: $(TARGET).hex $(TARGET).eep
 
 
 # Compile: create object files from C source files.
-%.o : %.c
+%.o : %.cpp
 	@echo
 	@echo $(MSG_COMPILING) $<
 	$(CC) -c $(ALL_CFLAGS) $< -o $@
 
 
 # Compile: create assembler files from C source files.
-%.s : %.c
+%.s : %.cpp
 	$(CC) -S $(ALL_CFLAGS) $< -o $@
 
 
@@ -384,8 +384,8 @@ clean_list :
 	$(REMOVE) $(TARGET).lss
 	$(REMOVE) $(OBJ)
 	$(REMOVE) $(LST)
-	$(REMOVE) $(SRC:.c=.s)
-	$(REMOVE) $(SRC:.c=.d)
+	$(REMOVE) $(SRC:.cpp=.s)
+	$(REMOVE) $(SRC:.cpp=.d)
 	$(REMOVE) *~
 	$(REMOVE) test.elf
 	$(REMOVE) test.o
@@ -400,14 +400,14 @@ clean_list :
 # (see the SHELL variable defined above).
 # This may not work with other shells or other seds.
 #
-%.d: %.c
+%.d: %.cpp
 	set -e; $(CC) -MM $(ALL_CFLAGS) $< \
 	| sed 's,\(.*\)\.o[ :]*,\1.o \1.d : ,g' > $@; \
 	[ -s $@ ] || rm -f $@
 
 
 # Remove the '-' if you want to see the dependency files generated.
--include $(SRC:.c=.d)
+-include $(SRC:.cpp=.d)
 
 
 

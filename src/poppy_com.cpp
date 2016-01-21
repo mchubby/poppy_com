@@ -5,18 +5,18 @@
  *  Author: nico
  *  Abstract: basics functionalities of the Poppy communication protocol
  */
-#include "src/poppyNetwork.h"
+#include "src/poppy_com.h"
 #include "src/i2c_master.h"
 #include "src/i2c_slave.h"
 #include "src/context.h"
 #include HAL
 
-extern context_t ctx;
+context_t ctx;
 
 // Startup and network configuration
-void poppyNetwork_init(TX_CB tx_cb,
-                       RX_CB rx_cb,
-                       RX_CB rxgc_cb) {
+void poppy_com_init(TX_CB tx_cb,
+                    RX_CB rx_cb,
+                    RX_CB rxgc_cb) {
     hal_init();
 
     // Save context
@@ -36,14 +36,11 @@ void poppyNetwork_init(TX_CB tx_cb,
     ctx.type = MODULETYPE;
 
     // Status
-    ctx.status = (status_t) {.rx_error = FALSE,
-                             .master_write = FALSE,
-                             .unexpected_state = FALSE,
-                             .warning = FALSE};
+    ctx.status = ((status_t) {FALSE, FALSE, FALSE, FALSE});
 }
 
-unsigned char poppyNetwork_read(unsigned char addr, msg_t *msg,
-                                unsigned char reply_size) {
+unsigned char poppy_com_read(unsigned char addr, msg_t *msg,
+                             unsigned char reply_size) {
     unsigned char i = 0;
 
     // Write the command
@@ -82,7 +79,7 @@ unsigned char poppyNetwork_read(unsigned char addr, msg_t *msg,
     return 0;
 }
 
-unsigned char poppyNetwork_write(unsigned char addr, msg_t *msg) {
+unsigned char poppy_com_write(unsigned char addr, msg_t *msg) {
     if (i2cAddr(addr, TX)) {
         i2c_transmit(STOP);
         return 1;

@@ -53,7 +53,7 @@ typedef void (*TX_CB) (msg_t *msg);
  * \param rxgc_cb function pointer into the rx general call callback.
  *
  */
-void poppyNetwork_init(TX_CB tx_cb,
+void poppy_com_init(TX_CB tx_cb,
                        RX_CB rx_cb,
                        RX_CB rxgc_cb);
 
@@ -65,7 +65,7 @@ void poppyNetwork_init(TX_CB tx_cb,
  * \param msg Message to send to the slave, he come back with the reply of the slave.
  *
  */
-unsigned char poppyNetwork_read(unsigned char addr, msg_t *msg,
+unsigned char poppy_com_read(unsigned char addr, msg_t *msg,
                                 unsigned char reply_size);
 
 /**
@@ -75,7 +75,7 @@ unsigned char poppyNetwork_read(unsigned char addr, msg_t *msg,
  * \param addr Address of the slave.
  * \param msg Message to send to the slave.
  */
-unsigned char poppyNetwork_write(unsigned char addr, msg_t *msg);
+unsigned char poppy_com_write(unsigned char addr, msg_t *msg);
 
 /**
  **TODO**

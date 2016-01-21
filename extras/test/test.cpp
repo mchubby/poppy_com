@@ -6,7 +6,7 @@
  */
 
 
-#include "src/poppyNetwork.h"
+#include "src/poppy_com.h"
 #include "src/i2c_master.h"
 #include "extras/test/inc/test_mngmnt.h"
 
@@ -39,7 +39,7 @@ void tx_cb(msg_t *msg) {
 }
 
 void Init(void) {
-    poppyNetwork_init(tx_cb, rx_cb, rxgc_cb);
+    poppy_com_init(tx_cb, rx_cb, rxgc_cb);
 }
 
 /*
@@ -80,9 +80,13 @@ unsigned char get_module(void) {
 
 unsigned char write(void) {
     printf("\nWrite message :\n");
-    msg_t msg = {.reg = TEST_REGISTER, .size = 2, .data[0] = 0xCA,
-                 .data[1] = 0xFE};
-    if (test(!poppyNetwork_write(0x01, &msg))) return 1;
+    msg_t msg;
+    msg.reg = TEST_REGISTER;
+    msg.size = 2;
+    msg.data[0] = 0xCA;
+    msg.data[1] = 0xFE;
+
+    if (test(!poppy_com_write(0x01, &msg))) return 1;
     if (test(test_value == 0xCAFE)) return 1;
     return 0;
 }
