@@ -77,6 +77,15 @@ void poppy_com_read(unsigned char addr, msg_t *msg,
 	}
 	 else   // UART mode
     {
+        // Send request trame
+        Serial.write((addr<<1)|0x01);           // Adress byte construct like in I2C protocol
+        Serial.write(msg->reg);
+        Serial.write(msg->size);
+        Serial.write(msg->data,msg->size);
+
+        // Receive answer
+        Serial.write((addr<<1)|0x00);
+        msg->size = Serial.readBytes(msg->data,reply_size);
     }
 }
 
@@ -99,5 +108,11 @@ void poppy_com_write(unsigned char addr, msg_t *msg) {
     }
     else
     {
+        // Send write trame
+        Serial.write((addr<<1)|0x01);           // Adress byte construct like in I2C protocol
+        Serial.write(msg->reg);
+        Serial.write(msg->size);
+        Serial.write(msg->data,msg->size);
+        Serial.write(crc(msg->data,msg->size));
      }
  }
