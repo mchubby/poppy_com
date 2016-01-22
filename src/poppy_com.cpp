@@ -13,6 +13,7 @@
 #include <Wire.h>
 
 #include <Arduino.h>
+#include "UART.h"
 
 context_t ctx;
 
