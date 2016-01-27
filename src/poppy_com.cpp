@@ -5,30 +5,23 @@
  *  Author: nico
  *  Abstract: basics functionalities of the Poppy communication protocol
  */
-#include "src/poppy_com.h"
-#include "src/i2c_master.h"
-#include "src/i2c_slave.h"
-#include "src/context.h"
-#include HAL
+#include "poppy_com.h"
+#include "i2c_master.h"
+#include "i2c_slave.h"
+#include "context.h"
+#include "crc.h"
+#include <Wire.h>
 
 context_t ctx;
 
 // Startup and network configuration
-void poppy_com_init(TX_CB tx_cb,
-                    RX_CB rx_cb,
-                    RX_CB rxgc_cb) {
-    hal_init();
-
+void poppy_com_init(MSG_CB tx_cb,
+                    MSG_CB rx_cb) {
     // Save context
     // User side slave TX callback
     ctx.tx_cb = tx_cb;
     // User side slave RX callback
     ctx.rx_cb = rx_cb;
-    // User side slave RX general call callback
-    ctx.rxgc_cb = rxgc_cb;
-
-    // Data callback
-    ctx.data_cb = idle;
 
     // Module id
     ctx.id = DEFAULTID;
@@ -36,61 +29,51 @@ void poppy_com_init(TX_CB tx_cb,
     ctx.type = MODULETYPE;
 
     // Status
-    ctx.status = ((status_t) {FALSE, FALSE, FALSE, FALSE});
+    ctx.status = ((status_t) {false, false, false, false});
+
+    Wire.begin(DEFAULTID);
+    // Wire.setclock(SCLFREQ); // No setclock function on my lib version...
+    Wire.onReceive(reception);
+    Wire.onRequest(transmition);
 }
 
-unsigned char poppy_com_read(unsigned char addr, msg_t *msg,
-                             unsigned char reply_size) {
+void poppy_com_read(unsigned char addr, msg_t *msg,
+                    unsigned char reply_size) {
     unsigned char i = 0;
+    // Write to address
+    Wire.beginTransmission(addr);
+    // Register
+    Wire.write(msg->reg + PROTOCOL_REGISTER_NB);
+    // Size
+    Wire.write(msg->size);
+    // Data
+    for (i = 0; i < msg->size; i++)
+        Wire.write(msg->data[i]);
+    // CRC
+    Wire.write(crc(&msg->data[0], msg->size));
 
-    // Write the command
-    if (i2cAddr(addr, TX)) {
-        i2c_transmit(STOP);
-        return 1;
-    }
-    if (i2cWrite(msg->reg)) {
-        i2c_transmit(STOP);
-        return 1;
-    }
-    if (i2cWrite(msg->size)) {
-        i2c_transmit(STOP);
-        return 1;
-    }
-    for (i = 0; i < msg->size; i++) {
-        if (i2cWrite(msg->data[i])) {
-            i2c_transmit(STOP);
-            return 1;
-        }
-    }
-
-    // Read the reply
-    if (i2cAddr(addr, RX)) {
-        i2c_transmit(STOP);
-        return 1;
-    }
+    // Read to address
+    Wire.requestFrom(addr, reply_size);
     msg->size = reply_size;
-    for (i = 0; i < msg->size; i++) {
-        if (i2cRead(FALSE, &msg->data[i])) {
-            i2c_transmit(STOP);
-            return 1;
-        }
-    }
-    i2c_transmit(STOP);
-    return 0;
+    // Save data
+    for (i = 0; i < msg->size; i++)
+        msg->data[i] = Wire.read();
+    // Stop
+    Wire.endTransmission();
 }
 
-unsigned char poppy_com_write(unsigned char addr, msg_t *msg) {
-    if (i2cAddr(addr, TX)) {
-        i2c_transmit(STOP);
-        return 1;
-    }
-    // Write DATA
-    i2cWrite(msg->reg);
-    i2cWrite(msg->size);
-    for (unsigned char i = 0; i < msg->size; i++) {
-        i2cWrite(msg->data[i]);
-    }
-    i2cWrite(crc(&msg->data[0], msg->size));
-    i2c_transmit(STOP);
-    return 0;
+void poppy_com_write(unsigned char addr, msg_t *msg) {
+    // Write to address
+    Wire.beginTransmission(addr);
+    // Register
+    Wire.write(msg->reg + PROTOCOL_REGISTER_NB);
+    // Size
+    Wire.write(msg->size);
+    // Data
+    for (unsigned char i = 0; i < msg->size; i++)
+        Wire.write(msg->data[i]);
+    // CRC
+    Wire.write(crc(&msg->data[0], msg->size));
+    // Stop
+    Wire.endTransmission();
 }

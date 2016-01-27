@@ -1,5 +1,6 @@
-#include "src/i2c_master.h"
-#include HAL
+#include "i2c_master.h"
+#include "crc.h"
+#include <Wire.h>
 
 // I2C Master mode
 
@@ -7,42 +8,20 @@
 extern context_t ctx;
 
 unsigned char set_extern_id(unsigned char addr, unsigned char newid) {
-    if (i2cAddr(addr, TX)) {
-        i2c_transmit(STOP);
-        return 1;
-    }
-    if (i2cWrite(WRITE_ID)) {
-        i2c_transmit(STOP);
-        return 1;
-    }
-    if (i2cWrite(newid)) {
-        i2c_transmit(STOP);
-        return 1;
-    }
-    i2cWrite(crc(&newid, 1));
-    i2c_transmit(STOP);
+    Wire.beginTransmission(addr); // transmit to device #addr
+    Wire.write(WRITE_ID);         // sends msg_type
+    Wire.write(newid);            // sends data
+    Wire.write(crc(&newid, 1));   // sends CRC
+    Wire.endTransmission();       // stop transmitting
     return 0;
 }
 
 unsigned char get_extern_module_type(unsigned char addr,
                                      unsigned char *module_type) {
-    if (i2cAddr(addr, TX)) {
-        i2c_transmit(STOP);
-        return 1;
-    }
-    if (i2cWrite(GET_MODULE_TYPE)) {
-        i2c_transmit(STOP);
-        return 1;
-    }
-    if (i2cAddr(addr, RX)) {
-        i2c_transmit(STOP);
-        return 1;
-    }
-    if (i2cRead(FALSE, module_type)) {
-        i2c_transmit(STOP);
-        return 1;
-    }
-    i2c_transmit(STOP);
+    Wire.beginTransmission(addr);     // transmit to device #addr
+    Wire.write(GET_MODULE_TYPE);      // sends msg_type
+    Wire.requestFrom((int)addr, 1);   // slave may send less than requested
+    *module_type = Wire.read();       // receive a byte as character
     return 0;
 }
 

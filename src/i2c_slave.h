@@ -1,15 +1,12 @@
 #ifndef I2C_SLAVE_H_
 #define I2C_SLAVE_H_
 
-#include "src/context.h"
-
-void id_update(unsigned char id);
+#include "context.h"
 
 // Callbacks
-void idle(msg_dir_t dir, volatile unsigned char *data);
-void get_size(msg_dir_t dir, volatile unsigned char *data);
-void get_data(msg_dir_t dir, volatile unsigned char *data);
+void transmition(void);
+void reception(int size);
 
-void msg_complete(msg_dir_t dir);
+void msg_complete(void);
 
 #endif /* I2C_SLAVE_H_ */

@@ -1,12 +1,4 @@
 #!/bin/sh
 
-if [ "$SUITE" = "build" ]; then
-    make
-
-elif [ "$SUITE" = "tests" ]; then
-    make test && ./test.elf
-
-else
-    echo "Unknown suite variable - '$SUITE'. Terminating ..."
-    exit 1
-fi
+ln -s $PWD /usr/local/share/arduino/libraries/poppy_com
+arduino --verify --board arduino:avr:uno extras/template/template.ino

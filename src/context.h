@@ -1,13 +1,8 @@
 #ifndef CONTEXT_H_
 #define CONTEXT_H_
 
-#include "src/config.h"
-#include "src/poppy_com.h"
-
-#define TRUE 1
-#define FALSE 0
-
-typedef void (*DATA_CB) (msg_dir_t dir, volatile unsigned char *data);
+#include "config.h"
+#include "poppy_com.h"
 
 typedef struct {
   unsigned char rx_error : 1;
@@ -33,10 +28,8 @@ typedef enum {
 
 typedef struct {
     // Callback pointers
-        DATA_CB data_cb;    /*!< Data management callback. */
-        TX_CB tx_cb;        /*!< User side slave TX callback. */
-        RX_CB rx_cb;        /*!< User side slave RX callback. */
-        RX_CB rxgc_cb;      /*!< User side slave RX general call callback. */
+        MSG_CB tx_cb;        /*!< User side slave TX callback. */
+        MSG_CB rx_cb;        /*!< User side slave RX callback. */
 
     // Module infomations
         unsigned char id;   /*!< Module ID. */
