@@ -36,8 +36,9 @@ typedef struct {
         unsigned char type; /*!< Module type. */
 
     // Variables
-        status_t status;    /*!< Status. */
-        msg_t msg;          /*!< Message. */
+        status_t status;          /*!< Status. */
+        hardwareMode_t hardMode;  /*!< Communication mode. */
+        msg_t msg;                /*!< Message. */
     }context_t;
 
 extern context_t ctx;

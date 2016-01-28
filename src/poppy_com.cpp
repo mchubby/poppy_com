@@ -12,11 +12,22 @@
 #include "crc.h"
 #include <Wire.h>
 
+#include <Arduino.h>
+
 context_t ctx;
+
+void poppy_com_ChangeHardwareMode(hardwareMode_t newMode) {
+    ctx.hardMode = newMode;
+}
 
 // Startup and network configuration
 void poppy_com_init(MSG_CB tx_cb,
                     MSG_CB rx_cb) {
+
+    // Initialization for UART mode
+    Serial.begin(1000000);  // 1M clock
+    Serial.setTimeout(1);   // 1ms timeout
+
     // Save context
     // User side slave TX callback
     ctx.tx_cb = tx_cb;
@@ -27,6 +38,8 @@ void poppy_com_init(MSG_CB tx_cb,
     ctx.id = DEFAULTID;
     // Module type
     ctx.type = MODULETYPE;
+    // Module communication type
+    ctx.hardMode = DEFAULTHARDWAREMODE;
 
     // Status
     ctx.status = ((status_t) {false, false, false, false});
@@ -39,41 +52,52 @@ void poppy_com_init(MSG_CB tx_cb,
 
 void poppy_com_read(unsigned char addr, msg_t *msg,
                     unsigned char reply_size) {
-    unsigned char i = 0;
-    // Write to address
-    Wire.beginTransmission(addr);
-    // Register
-    Wire.write(msg->reg + PROTOCOL_REGISTER_NB);
-    // Size
-    Wire.write(msg->size);
-    // Data
-    for (i = 0; i < msg->size; i++)
-        Wire.write(msg->data[i]);
-    // CRC
-    Wire.write(crc(&msg->data[0], msg->size));
+    if(ctx.hardMode == I2C) {
+        unsigned char i = 0;
+        // Write to address
+        Wire.beginTransmission(addr);
+        // Register
+        Wire.write(msg->reg + PROTOCOL_REGISTER_NB);
+        // Size
+        Wire.write(msg->size);
+        // Data
+        for (i = 0; i < msg->size; i++)
+            Wire.write(msg->data[i]);
+        // CRC
+        Wire.write(crc(&msg->data[0], msg->size));
 
-    // Read to address
-    Wire.requestFrom(addr, reply_size);
-    msg->size = reply_size;
-    // Save data
-    for (i = 0; i < msg->size; i++)
-        msg->data[i] = Wire.read();
-    // Stop
-    Wire.endTransmission();
+        // Read to address
+        Wire.requestFrom(addr, reply_size);
+        msg->size = reply_size;
+        // Save data
+        for (i = 0; i < msg->size; i++)
+            msg->data[i] = Wire.read();
+        // Stop
+        Wire.endTransmission();
+	}
+	 else   // UART mode
+    {
+    }
 }
 
 void poppy_com_write(unsigned char addr, msg_t *msg) {
-    // Write to address
-    Wire.beginTransmission(addr);
-    // Register
-    Wire.write(msg->reg + PROTOCOL_REGISTER_NB);
-    // Size
-    Wire.write(msg->size);
-    // Data
-    for (unsigned char i = 0; i < msg->size; i++)
-        Wire.write(msg->data[i]);
-    // CRC
-    Wire.write(crc(&msg->data[0], msg->size));
-    // Stop
-    Wire.endTransmission();
-}
+    if(ctx.hardMode == I2C)
+    {
+        // Write to address
+        Wire.beginTransmission(addr);
+        // Register
+        Wire.write(msg->reg + PROTOCOL_REGISTER_NB);
+        // Size
+        Wire.write(msg->size);
+        // Data
+        for (unsigned char i = 0; i < msg->size; i++)
+            Wire.write(msg->data[i]);
+        // CRC
+        Wire.write(crc(&msg->data[0], msg->size));
+        // Stop
+        Wire.endTransmission();
+    }
+    else
+    {
+     }
+ }
