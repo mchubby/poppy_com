@@ -6,9 +6,6 @@
 #                customize the avrdude settings below first!
 # make docs = compile with doxygen the code documentation
 
-# Maximum I2C speed (HZ)
-SCLFREQ = 400000
-
 #-------------------------------------------------------------------------------
 # Tools
 #-------------------------------------------------------------------------------
@@ -33,14 +30,27 @@ GDB = $(CROSS_COMPILE)gdb
 NM = $(CROSS_COMPILE)nm
 
 ROOT_PATH = ../..
-HAL_PATH = $(ROOT_PATH)/hal/$(BOARD)
+HAL_PATH = $(ROOT_PATH)/hal/$(HAL_NAME)
 DOC_PATH = $(ROOT_PATH)/../extra/Docs
+
+ifeq ($(CROSS_COMPILE),arm-none-eabi-)
+	# change this value if openocd isn't in the user/system PATH
+	OPENOCD = openocd
+	RESOURCES_OPENOCD_UPLOAD = $(HAL_PATH)/openocd_scripts/variant_upload.cfg
+	RESOURCES_OPENOCD_START = $(HAL_PATH)/openocd_scripts/variant_debug_start.cfg
+	RESOURCES_GDB = $(HAL_PATH)/debug_scripts/variant.gdb
+	# RESOURCES_LINKER = $(HAL_PATH)/linker_scripts/gcc/variant_without_bootloader.ld
+	RESOURCES_LINKER = $(HAL_PATH)/ASF/sam/utils/linker_scripts/samg/samg55j19/gcc/flash.ld
+
+	INCLUDES += -I$(ROOT_PATH)/tools/CMSIS_API/Include
+	INCLUDES += -I$(ROOT_PATH)/tools/CMSIS_Devices/ATMEL
+endif
 
 # Doxygen configuration file name
 DOXYFILE = $(ROOT_PATH)/../extra/.Doxyfile
 
 OBJ_PATH = $(HAL_PATH)/obj
-OUTPUT_NAME = lib$(BOARD)
+OUTPUT_NAME = lib$(HAL_NAME)
 OUTPUT_FILE_PATH = $(HAL_PATH)/$(OUTPUT_NAME).a
 
 #|---------------------------------------------------------------------------------------|
@@ -67,32 +77,51 @@ LIB_PATH = -L$(dir $(RESOURCES_LINKER))
 #| Options for compiler binaries                                                         |
 #|---------------------------------------------------------------------------------------|
 
-COMMON_FLAGS = \
--g -O$(OPT)                                                      \
--funsigned-char -fpack-struct -fshort-enums                      \
--Wall -Wstrict-prototypes                                        \
--Wa,-adhlns=$(<:.c=.lst)                                         \
--DMCU=$(MCU)                                                     \
--DMAINCLOCK=$(MAINCLOCK)                                         \
--DSCLFREQ=$(SCLFREQ)                                             \
-$(INCLUDES)
+COMMON_FLAGS = -g -O$(OPT) -funsigned-char -fpack-struct -fshort-enums
+COMMON_FLAGS += -Wall -Wstrict-prototypes -Wa,-adhlns=$(<:.c=.lst) -D$(MCU)
+COMMON_FLAGS += -DMAINCLOCK=$(MAINCLOCK) -DBOARD=$(BOARD) -Dscanf=iscanf
+COMMON_FLAGS += -DARM_MATH_CM4=true -Dprintf=iprintf -DDONT_USE_CMSIS_INIT
+COMMON_FLAGS += -Wall -Wchar-subscripts -Wcomment
+COMMON_FLAGS += -Wmain -Wparentheses 
+# COMMON_FLAGS += -Werror-implicit-function-declaration
+COMMON_FLAGS += -Wsequence-point -Wreturn-type -Wswitch -Wtrigraphs -Wunused
+COMMON_FLAGS += -Wuninitialized -Wunknown-pragmas -Wfloat-equal -Wundef
+COMMON_FLAGS += -Wshadow -Wpointer-arith -Wwrite-strings
+COMMON_FLAGS += -Wsign-compare -Waggregate-return -Wmissing-declarations
+COMMON_FLAGS += -Wmissing-format-attribute -Wno-deprecated-declarations
+COMMON_FLAGS += -Wpacked -Wredundant-decls -Wlong-long
+COMMON_FLAGS += -Wunreachable-code -Wcast-align
+COMMON_FLAGS += -fdiagnostics-color=always $(INCLUDES)
 
+ifeq ($(DEBUG),0)
+COMMON_FLAGS += -Os -DDEBUG
+else
+COMMON_FLAGS += -ggdb3 -O0
+COMMON_FLAGS += -Wformat=2
+endif
 
 ifeq ($(CROSS_COMPILE),avr-)
 	COMMON_FLAGS += -mmcu=$(MCU)
 	ASFLAGS = -mmcu=$(MCU)
 endif
+ifeq ($(CROSS_COMPILE),arm-none-eabi-)
+	COMMON_FLAGS += -mthumb -mcpu=$(DEVICE_CORE) -mfpu=fpv4-sp-d16
+	COMMON_FLAGS += --param max-inline-insns-single=500 -ffunction-sections -fdata-sections
+	COMMON_FLAGS += -DDONT_USE_CMSIS_INIT
+	# COMMON_FLAGS += -Wa,-adhlns="$(subst .o,.lst,$@)"
+	COMMON_FLAGS += --param max-inline-insns-single=500
+endif
 
-CFLAGS += $(COMMON_FLAGS) -std=gnu99
+CFLAGS += $(COMMON_FLAGS) -std=gnu99 -Wimplicit-int -Wbad-function-cast -Wmissing-prototypes -Wnested-externs
 
 CPPFLAGS = $(COMMON_FLAGS) -std=gnu++11 -fno-rtti -fno-exceptions
 
-ASFLAGS += -Wa,-adhlns=$(<:.S=.lst),-gstabs -I. -x assembler-with-cpp
+# AFLAGS += -Wa,-adhlns=$(<:.S=.lst),-gstabs -I. -x assembler-with-cpp
 
-LDFLAGS = -Wl,-Map=$(BOARD).map,--cref
+# LDFLAGS = -Wl,-Map=$(HAL_NAME).map,--cref
 
 #|---------------------------------------------------------------------------------------|
-#| Define targets                                                                        |
+#| Define targets                                         Board                               |
 #|---------------------------------------------------------------------------------------|
 #AOBJS += $(patsubst %.S,%.o,$(PROJ_ASRCS))
 AOBJS = $(patsubst %.s,%.o,$(addprefix $(OBJ_PATH)/, $(notdir $(PROJ_ASRCS))))

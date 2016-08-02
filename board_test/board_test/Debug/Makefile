@@ -2,7 +2,8 @@
 # Automatically-generated file. Do not edit!
 ################################################################################
 
-SHELL := cmd.exe
+# SHELL := cmd.exe
+SHELL := /bin/sh
 RM := rm -rf
 
 USER_OBJS :=
