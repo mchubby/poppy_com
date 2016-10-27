@@ -37,7 +37,6 @@ typedef struct {
 
     // Variables
         status_t status;          /*!< Status. */
-        hardwareMode_t hardMode;  /*!< Communication mode. */
         msg_t msg;                /*!< Message. */
     }context_t;
 

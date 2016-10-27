@@ -9,8 +9,6 @@
 
 #define DEFAULTID 0x01
 
-#define DEFAULTHARDWAREMODE I2C
-
 #ifndef MODULETYPE
     #define MODULETYPE DEV_BOARD
 #endif

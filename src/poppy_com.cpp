@@ -6,11 +6,8 @@
  *  Abstract: basics functionalities of the Poppy communication protocol
  */
 #include "poppy_com.h"
-#include "i2c_master.h"
-#include "i2c_slave.h"
 #include "context.h"
 #include "crc.h"
-#include <Wire.h>
 
 #include <Arduino.h>
 #include "UART.h"
