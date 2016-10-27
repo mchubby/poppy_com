@@ -4,13 +4,13 @@
 
 #ifndef CONFIG_H_
 #define CONFIG_H_
-
 #include "mod_list.h"
 
-#define DEFAULTID 0x01
+//#define MODULETYPE LED
 
 #ifndef MODULETYPE
     #define MODULETYPE DEV_BOARD
+    #define DEFAULTID 0x01
 #endif
 
 #ifndef MCU
