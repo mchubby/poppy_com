@@ -6,7 +6,11 @@
 #define MOD_LIST_H_
 
 //*****************Frame format****************************
-// addresse / register / size / data[512]
+// address / register / size / data[512]
+// byte    / byte     / byte / byte[]
+
+// minimum msg is :
+// address / register / 0
 
 //*****************Module list****************************
 enum {
@@ -17,7 +21,9 @@ enum {
     SCREEN,
     MIC,
     SYNTHE,
-    IMU
+    IMU,
+    VIBRATOR,
+    SERVO
 };
 //*****************Module address list****************************
 enum {
@@ -29,8 +35,9 @@ enum {
     MIC_ADDR,
     SYNTHE_ADDR,
     IMU_ADDR,
-}addr_register_t;;
-
+    VIBRATOR_ADDR,
+    SERVO_ADDR
+}addr_register_t;
 //*****************Module registers****************************
 
 typedef enum {
@@ -58,12 +65,23 @@ typedef enum {
 }mic_register_t;
 
 typedef enum {
-    SYNTHE_VOL
+    SYNTHE_VOL,
+    PLAY_TEST1, // no data, just play the melody
+    PLAY_TEST2, // no data, just play the melody
 }synthe_register_t;
 
 typedef enum {
     IMU_REGISTER
 }imu_register_t;
+
+typedef enum {
+    VIBRATOR_SPEED
+}vibrator_register_t;
+
+typedef enum {
+    SERVO_LEFT_POSITION,
+    SERVO_RIGHT_POSITION
+}servo_register_t;
 
 
 #endif /* MOD_LIST_H_ */
