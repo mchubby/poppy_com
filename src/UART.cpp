@@ -1,15 +1,24 @@
 #include "UART.h"
 #include "crc.h"
 #include "HardwareSerial.h"
+#include "Arduino.h"
+
 
 void serialEvent()
 {
     static unsigned char count = 0;
     static unsigned char keep = 0;
     static unsigned char size = 0;
+    static bool toggle = false;
+    static int serial_time = millis();
+    if( millis() - serial_time > 3 ) {
+        count = 0;
+        keep = 0;
+    }
+    serial_time = millis();
 	while (Serial.available()) {
-	    // get the new byte:
-	    unsigned char data = (char)Serial.read();
+        // get the new byte:
+        unsigned char data = (char)Serial.read();
         if (!count && data == ctx.id) { // ID check
             keep = 1;        }
         if (count == 1 && keep) { // Catch register
