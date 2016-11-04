@@ -41,7 +41,9 @@ enum {
 //*****************Module registers****************************
 
 typedef enum {
-    MASTER_REGISTER
+    MASTER_GET_MIC_LEVEL, // uint16_t level
+    MASTER_GET_TACTIL_LEVEL, // uint16_t level
+    MASTER_GET_IMU_LEVEL // {float yow, float pitch, float roll, int16_t accelx, int16_t accely, int16_t accelz} (float = 4 bytes)
 }master_register_t;
 
 typedef enum {
@@ -49,7 +51,7 @@ typedef enum {
 }photoresistor_register_t;
 
 typedef enum {
-    LIGHT_LEVEL // request with no data, ask for a reply
+    TOUCH_LEVEL // request with no data, ask for a reply
 }tactil_register_t;
 
 typedef enum {
@@ -71,7 +73,7 @@ typedef enum {
 }synthe_register_t;
 
 typedef enum {
-    IMU_REGISTER
+    IMU_LEVEL // request with no data, ask for a reply
 }imu_register_t;
 
 typedef enum {
